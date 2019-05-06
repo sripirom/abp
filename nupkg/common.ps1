@@ -8,6 +8,7 @@ $solutions = (
     "modules/users",
     "modules/setting-management",
     "modules/permission-management",
+    "modules/feature-management",
     "modules/tenant-management",
     "modules/identity",
     "modules/identityserver",
@@ -16,6 +17,7 @@ $solutions = (
     "modules/background-jobs",
     "modules/blogging",
     "modules/docs",
+    "modules/client-simulation",
     "abp_io"
 )
 
@@ -23,8 +25,10 @@ $solutions = (
 $projects = (
 
     # framework    
+    "framework/src/Volo.Abp",
     "framework/src/Volo.Abp.ApiVersioning.Abstractions",
     "framework/src/Volo.Abp.AspNetCore",
+    "framework/src/Volo.Abp.AspNetCore.Authentication.JwtBearer",
     "framework/src/Volo.Abp.AspNetCore.Authentication.OAuth",
     "framework/src/Volo.Abp.AspNetCore.MultiTenancy",
     "framework/src/Volo.Abp.AspNetCore.Mvc",
@@ -49,6 +53,8 @@ $projects = (
     "framework/src/Volo.Abp.BackgroundWorkers",
     "framework/src/Volo.Abp.Caching",
     "framework/src/Volo.Abp.Castle.Core",
+    "framework/src/Volo.Abp.Cli.Core",
+    "framework/src/Volo.Abp.Cli",
     "framework/src/Volo.Abp.Core",
     "framework/src/Volo.Abp.Data",
     "framework/src/Volo.Abp.Ddd.Application",
@@ -58,6 +64,7 @@ $projects = (
     "framework/src/Volo.Abp.EntityFrameworkCore.SqlServer",
     "framework/src/Volo.Abp.EntityFrameworkCore.MySQL",
     "framework/src/Volo.Abp.EntityFrameworkCore.PostgreSql",
+    "framework/src/Volo.Abp.EntityFrameworkCore.Sqlite",
     "framework/src/Volo.Abp.EventBus",
     "framework/src/Volo.Abp.EventBus.RabbitMQ",
     "framework/src/Volo.Abp.Features",
@@ -73,7 +80,7 @@ $projects = (
     "framework/src/Volo.Abp.Localization.Abstractions",
     "framework/src/Volo.Abp.MemoryDb",
     "framework/src/Volo.Abp.MongoDB",
-    "framework/src/Volo.Abp.MultiTenancy.Abstractions",
+    "framework/src/Volo.Abp.MultiTenancy",
     "framework/src/Volo.Abp.ObjectMapping",
     "framework/src/Volo.Abp.RabbitMQ",
     "framework/src/Volo.Abp.Security",
@@ -114,6 +121,17 @@ $projects = (
     "modules/permission-management/src/Volo.Abp.PermissionManagement.HttpApi.Client",
     "modules/permission-management/src/Volo.Abp.PermissionManagement.Web",
 
+    # modules/feature-management
+    "modules/feature-management/src/Volo.Abp.FeatureManagement.Domain.Shared",
+    "modules/feature-management/src/Volo.Abp.FeatureManagement.Domain",
+    "modules/feature-management/src/Volo.Abp.FeatureManagement.Application.Contracts",
+    "modules/feature-management/src/Volo.Abp.FeatureManagement.Application",
+    "modules/feature-management/src/Volo.Abp.FeatureManagement.EntityFrameworkCore",
+    "modules/feature-management/src/Volo.Abp.FeatureManagement.MongoDB",
+    "modules/feature-management/src/Volo.Abp.FeatureManagement.HttpApi",
+    "modules/feature-management/src/Volo.Abp.FeatureManagement.HttpApi.Client",
+    "modules/feature-management/src/Volo.Abp.FeatureManagement.Web",
+    
     # modules/tenant-management
     "modules/tenant-management/src/Volo.Abp.TenantManagement.Domain.Shared",
     "modules/tenant-management/src/Volo.Abp.TenantManagement.Domain",
@@ -181,6 +199,10 @@ $projects = (
     "modules/background-jobs/src/Volo.Abp.BackgroundJobs.Domain",
     "modules/background-jobs/src/Volo.Abp.BackgroundJobs.EntityFrameworkCore",
     "modules/background-jobs/src/Volo.Abp.BackgroundJobs.MongoDB",
+    
+    # modules/client-simulation
+    "modules/client-simulation/src/Volo.ClientSimulation",
+    "modules/client-simulation/src/Volo.ClientSimulation.Web",
     
     # abp_io/SolutionTemplating
     "abp_io/src/Volo.Utils.SolutionTemplating"

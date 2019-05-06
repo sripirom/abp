@@ -156,7 +156,6 @@ namespace Volo.Blogging.Posts
             var post = new Post(
                 id: GuidGenerator.Create(),
                 blogId: input.BlogId,
-                creatorId: CurrentUser.GetId(),
                 title: input.Title,
                 coverImage: input.CoverImage,
                 url: input.Url
@@ -228,8 +227,9 @@ namespace Volo.Blogging.Posts
                 {
                     tag.IncreaseUsageCount();
                     tag = await _tagRepository.UpdateAsync(tag);
-                    post.AddTag(tag.Id);
                 }
+
+                post.AddTag(tag.Id);
             }
         }
 
