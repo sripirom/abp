@@ -6,7 +6,7 @@ namespace Volo.Abp.Features
 {
     public class EditionFeatureValueProvider : FeatureValueProvider
     {
-        public const string ProviderName = "Edition";
+        public const string ProviderName = "E";
 
         public override string Name => ProviderName;
 
@@ -20,7 +20,7 @@ namespace Volo.Abp.Features
 
         public override async Task<string> GetOrNullAsync(FeatureDefinition feature)
         {
-            var editionId = PrincipalAccessor.Principal.FindEditionId();
+            var editionId = PrincipalAccessor.Principal?.FindEditionId();
             if (editionId == null)
             {
                 return null;

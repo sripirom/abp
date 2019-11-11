@@ -25,10 +25,16 @@ namespace Volo.Abp.PermissionManagement.Web.Pages.AbpPermissionManagement
 
         public string EntityDisplayName { get; set; }
 
+        public bool SelectAllInThisTab { get; set; }
+
+        public bool SelectAllInAllTabs { get; set; }
+
         private readonly IPermissionAppService _permissionAppService;
 
         public PermissionManagementModal(IPermissionAppService permissionAppService)
         {
+            ObjectMapperContext = typeof(AbpPermissionManagementWebModule);
+
             _permissionAppService = permissionAppService;
         }
 
@@ -49,6 +55,13 @@ namespace Volo.Abp.PermissionManagement.Web.Pages.AbpPermissionManagement
             {
                 new FlatTreeDepthFinder<PermissionGrantInfoViewModel>().SetDepths(group.Permissions);
             }
+
+            foreach (var group in Groups)
+            {
+                group.IsAllPermissionsGranted = group.Permissions.All(p => p.IsGranted);
+            }
+
+            SelectAllInAllTabs = Groups.All(g => g.IsAllPermissionsGranted);
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -79,6 +92,8 @@ namespace Volo.Abp.PermissionManagement.Web.Pages.AbpPermissionManagement
         public class PermissionGroupViewModel
         {
             public string Name { get; set; }
+
+            public bool IsAllPermissionsGranted { get; set; }
 
             public string DisplayName { get; set; }
 

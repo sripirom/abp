@@ -5,11 +5,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
 using Volo.Abp;
 using Volo.Abp.Auditing;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.Autofac;
+using Volo.Abp.Data;
 using Volo.Abp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore.SqlServer;
 using Volo.Abp.EventBus.RabbitMq;
@@ -56,18 +58,18 @@ namespace BloggingService.Host
                     options.ApiName = configuration["AuthServer:ApiName"];
                     options.RequireHttpsMetadata = false;
                     //TODO: Should create an extension method for that (may require to create a new ABP package depending on the IdentityServer4.AccessTokenValidation)
-                    options.InboundJwtClaimTypeMap["sub"] = AbpClaimTypes.UserId;
-                    options.InboundJwtClaimTypeMap["role"] = AbpClaimTypes.Role;
-                    options.InboundJwtClaimTypeMap["email"] = AbpClaimTypes.Email;
-                    options.InboundJwtClaimTypeMap["email_verified"] = AbpClaimTypes.EmailVerified;
-                    options.InboundJwtClaimTypeMap["phone_number"] = AbpClaimTypes.PhoneNumber;
-                    options.InboundJwtClaimTypeMap["phone_number_verified"] = AbpClaimTypes.PhoneNumberVerified;
-                    options.InboundJwtClaimTypeMap["name"] = AbpClaimTypes.UserName;
+                    //options.InboundJwtClaimTypeMap["sub"] = AbpClaimTypes.UserId;
+                    //options.InboundJwtClaimTypeMap["role"] = AbpClaimTypes.Role;
+                    //options.InboundJwtClaimTypeMap["email"] = AbpClaimTypes.Email;
+                    //options.InboundJwtClaimTypeMap["email_verified"] = AbpClaimTypes.EmailVerified;
+                    //options.InboundJwtClaimTypeMap["phone_number"] = AbpClaimTypes.PhoneNumber;
+                    //options.InboundJwtClaimTypeMap["phone_number_verified"] = AbpClaimTypes.PhoneNumberVerified;
+                    //options.InboundJwtClaimTypeMap["name"] = AbpClaimTypes.UserName;
                 });
 
             context.Services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc("v1", new Info {Title = "Blogging Service API", Version = "v1"});
+                options.SwaggerDoc("v1", new OpenApiInfo {Title = "Blogging Service API", Version = "v1"});
                 options.DocInclusionPredicate((docName, description) => true);
                 options.CustomSchemaIds(type => type.FullName);
             });
@@ -85,10 +87,9 @@ namespace BloggingService.Host
             Configure<BlogFileOptions>(options =>
             {
                 options.FileUploadLocalFolder = Path.Combine(hostingEnvironment.WebRootPath, "files");
-                options.FileUploadUrlRoot = "/files/";
             });
 
-            context.Services.AddDistributedRedisCache(options =>
+            context.Services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = configuration["Redis:Configuration"];
             });
@@ -110,6 +111,7 @@ namespace BloggingService.Host
 
             app.UseCorrelationId();
             app.UseVirtualFiles();
+            app.UseRouting();
             app.UseAuthentication();
             app.UseAbpRequestLocalization(); //TODO: localization?
             app.UseSwagger();
@@ -120,27 +122,16 @@ namespace BloggingService.Host
             app.UseAuditing();
             app.UseMvcWithDefaultRouteAndArea();
 
-            AsyncHelper.RunSync(() => SeedDataAsync(context.ServiceProvider));
-        }
-
-        public async Task SeedDataAsync(IServiceProvider serviceProvider)
-        {
-            using (var scope = serviceProvider.CreateScope())
+            //TODO: Problem on a clustered environment
+            AsyncHelper.RunSync(async () =>
             {
-                var blogRepository = scope.ServiceProvider.GetRequiredService<IBlogRepository>();
-                var guidGenerator = scope.ServiceProvider.GetRequiredService<IGuidGenerator>();
-
-                if (await blogRepository.FindByShortNameAsync("abp") == null)
+                using (var scope = context.ServiceProvider.CreateScope())
                 {
-                    await blogRepository.InsertAsync(
-                        new Blog(
-                            guidGenerator.Create(),
-                            "ABP Blog",
-                            "abp"
-                        )
-                    );
+                    await scope.ServiceProvider
+                        .GetRequiredService<IDataSeeder>()
+                        .SeedAsync();
                 }
-            }
+            });
         }
     }
 }

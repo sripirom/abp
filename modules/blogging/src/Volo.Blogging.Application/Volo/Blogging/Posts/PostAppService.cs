@@ -2,10 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
-using Volo.Abp.Application.Services;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
-using Volo.Abp.Users;
 using Volo.Blogging.Comments;
 using Volo.Blogging.Tagging;
 using Volo.Blogging.Tagging.Dtos;
@@ -13,7 +11,7 @@ using Volo.Blogging.Users;
 
 namespace Volo.Blogging.Posts
 {
-    public class PostAppService : ApplicationService, IPostAppService
+    public class PostAppService : BloggingAppServiceBase, IPostAppService
     {
         protected IBlogUserLookupService UserLookupService { get; }
 
@@ -156,7 +154,6 @@ namespace Volo.Blogging.Posts
             var post = new Post(
                 id: GuidGenerator.Create(),
                 blogId: input.BlogId,
-                creatorId: CurrentUser.GetId(),
                 title: input.Title,
                 coverImage: input.CoverImage,
                 url: input.Url
@@ -228,8 +225,9 @@ namespace Volo.Blogging.Posts
                 {
                     tag.IncreaseUsageCount();
                     tag = await _tagRepository.UpdateAsync(tag);
-                    post.AddTag(tag.Id);
                 }
+
+                post.AddTag(tag.Id);
             }
         }
 

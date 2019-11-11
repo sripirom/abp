@@ -14,7 +14,7 @@ using Volo.Docs.Projects;
 
 namespace Volo.Docs.Admin.Pages.Docs.Admin.Projects
 {
-    public class EditModel : AbpPageModel
+    public class EditModel : DocsAdminPageModel
     {
         [BindProperty]
         public EditGithubProjectViewModel GithubProject { get; set; }
@@ -38,10 +38,8 @@ namespace Volo.Docs.Admin.Pages.Docs.Admin.Projects
                 SetGithubProjectFromDto(project);
                 return Page();
             }
-            else
-            {
-                throw new BusinessException("UnknowDocumentSourceExceptionMessage");
-            }
+
+            throw new BusinessException("UnknowDocumentSourceExceptionMessage");
         }
 
         public async Task<IActionResult> OnPostAsync()

@@ -11,7 +11,7 @@ namespace Volo.Abp.Settings
     [DependsOn(
         typeof(AbpLocalizationAbstractionsModule),
         typeof(AbpSecurityModule),
-        typeof(AbpMultiTenancyAbstractionsModule)
+        typeof(AbpMultiTenancyModule)
         )]
     public class AbpSettingsModule : AbpModule
     {
@@ -22,7 +22,7 @@ namespace Volo.Abp.Settings
 
         public override void ConfigureServices(ServiceConfigurationContext context)
         {
-            Configure<SettingOptions>(options =>
+            Configure<AbpSettingOptions>(options =>
             {
                 options.ValueProviders.Add<DefaultValueSettingValueProvider>();
                 options.ValueProviders.Add<GlobalSettingValueProvider>();
@@ -43,7 +43,7 @@ namespace Volo.Abp.Settings
                 }
             });
 
-            services.Configure<SettingOptions>(options =>
+            services.Configure<AbpSettingOptions>(options =>
             {
                 options.DefinitionProviders.AddIfNotContains(definitionProviders);
             });

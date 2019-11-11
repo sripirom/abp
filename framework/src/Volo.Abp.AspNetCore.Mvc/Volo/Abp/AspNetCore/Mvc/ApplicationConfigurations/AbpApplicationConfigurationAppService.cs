@@ -4,6 +4,7 @@ using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading.Tasks;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Authorization;
@@ -24,16 +25,18 @@ namespace Volo.Abp.AspNetCore.Mvc.ApplicationConfigurations
         private readonly ISettingProvider _settingProvider;
         private readonly ISettingDefinitionManager _settingDefinitionManager;
         private readonly IFeatureDefinitionManager _featureDefinitionManager;
+        private readonly ILanguageProvider _languageProvider;
 
         public AbpApplicationConfigurationAppService(
             IOptions<AbpLocalizationOptions> localizationOptions,
             IServiceProvider serviceProvider,
             IAbpAuthorizationPolicyProvider abpAuthorizationPolicyProvider,
             IAuthorizationService authorizationService,
-            ICurrentUser currentUser, 
-            ISettingProvider settingProvider, 
-            SettingDefinitionManager settingDefinitionManager, 
-            IFeatureDefinitionManager featureDefinitionManager)
+            ICurrentUser currentUser,
+            ISettingProvider settingProvider,
+            SettingDefinitionManager settingDefinitionManager,
+            IFeatureDefinitionManager featureDefinitionManager,
+            ILanguageProvider languageProvider)
         {
             _serviceProvider = serviceProvider;
             _abpAuthorizationPolicyProvider = abpAuthorizationPolicyProvider;
@@ -42,6 +45,7 @@ namespace Volo.Abp.AspNetCore.Mvc.ApplicationConfigurations
             _settingProvider = settingProvider;
             _settingDefinitionManager = settingDefinitionManager;
             _featureDefinitionManager = featureDefinitionManager;
+            _languageProvider = languageProvider;
             _localizationOptions = localizationOptions.Value;
         }
 
@@ -53,7 +57,7 @@ namespace Volo.Abp.AspNetCore.Mvc.ApplicationConfigurations
             {
                 Auth = await GetAuthConfigAsync(),
                 Features = await GetFeaturesConfigAsync(),
-                Localization = GetLocalizationConfig(),
+                Localization = await GetLocalizationConfigAsync(),
                 CurrentUser = GetCurrentUser(),
                 Setting = await GetSettingConfigAsync()
             };
@@ -87,9 +91,11 @@ namespace Volo.Abp.AspNetCore.Mvc.ApplicationConfigurations
             return authConfig;
         }
 
-        protected virtual ApplicationLocalizationConfigurationDto GetLocalizationConfig()
+        protected virtual async Task<ApplicationLocalizationConfigurationDto> GetLocalizationConfigAsync()
         {
             var localizationConfig = new ApplicationLocalizationConfigurationDto();
+
+            localizationConfig.Languages.AddRange(await _languageProvider.GetLanguagesAsync());
 
             foreach (var resource in _localizationOptions.Resources.Values)
             {
@@ -104,11 +110,37 @@ namespace Volo.Abp.AspNetCore.Mvc.ApplicationConfigurations
                     dictionary[localizedString.Name] = localizedString.Value;
                 }
 
-                var resourceName = LocalizationResourceNameAttribute.GetName(resource.ResourceType);
-                localizationConfig.Values[resourceName] = dictionary;
+                localizationConfig.Values[resource.ResourceName] = dictionary;
             }
 
+            localizationConfig.CurrentCulture = GetCurrentCultureInfo();
+
             return localizationConfig;
+        }
+
+        private static CurrentCultureDto GetCurrentCultureInfo()
+        {
+           return new CurrentCultureDto
+            {
+                Name = CultureInfo.CurrentUICulture.Name,
+                DisplayName = CultureInfo.CurrentUICulture.DisplayName,
+                EnglishName = CultureInfo.CurrentUICulture.EnglishName,
+                NativeName = CultureInfo.CurrentUICulture.NativeName,
+                IsRightToLeft = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft,
+                CultureName = CultureInfo.CurrentUICulture.TextInfo.CultureName,
+                TwoLetterIsoLanguageName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName,
+                ThreeLetterIsoLanguageName = CultureInfo.CurrentUICulture.ThreeLetterISOLanguageName,
+                DateTimeFormat = new DateTimeFormatDto
+                {
+                    CalendarAlgorithmType = CultureInfo.CurrentUICulture.DateTimeFormat.Calendar.AlgorithmType.ToString(),
+                    DateTimeFormatLong = CultureInfo.CurrentUICulture.DateTimeFormat.LongDatePattern,
+                    ShortDatePattern = CultureInfo.CurrentUICulture.DateTimeFormat.ShortDatePattern,
+                    FullDateTimePattern = CultureInfo.CurrentUICulture.DateTimeFormat.FullDateTimePattern,
+                    DateSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.DateSeparator,
+                    ShortTimePattern = CultureInfo.CurrentUICulture.DateTimeFormat.ShortTimePattern,
+                    LongTimePattern = CultureInfo.CurrentUICulture.DateTimeFormat.LongTimePattern,
+                }
+            };
         }
 
         private async Task<ApplicationSettingConfigurationDto> GetSettingConfigAsync()
@@ -133,10 +165,7 @@ namespace Volo.Abp.AspNetCore.Mvc.ApplicationConfigurations
 
         protected virtual async Task<ApplicationFeatureConfigurationDto> GetFeaturesConfigAsync()
         {
-            var result = new ApplicationFeatureConfigurationDto
-            {
-                Values = new Dictionary<string, string>()
-            };
+            var result = new ApplicationFeatureConfigurationDto();
 
             foreach (var featureDefinition in _featureDefinitionManager.GetAll())
             {
