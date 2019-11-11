@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
 
@@ -13,18 +14,23 @@ namespace Volo.Abp.Cli.Args
         public string Target { get; }
 
         [NotNull]
-        public CommandLineOptions Options { get; }
+        public AbpCommandLineOptions Options { get; }
 
         public CommandLineArgs([CanBeNull] string command = null, [CanBeNull] string target = null)
         {
             Command = command;
             Target = target;
-            Options = new CommandLineOptions();
+            Options = new AbpCommandLineOptions();
         }
 
         public static CommandLineArgs Empty()
         {
             return new CommandLineArgs();
+        }
+
+        public bool IsCommand(string command)
+        {
+            return string.Equals(Command, command, StringComparison.OrdinalIgnoreCase);
         }
 
         public override string ToString()
